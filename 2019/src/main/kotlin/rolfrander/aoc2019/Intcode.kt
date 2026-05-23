@@ -11,10 +11,14 @@ enum class OpCode(val params: Int) {
     MUL(3),
     IN(1),
     OUT(1),
+    JNZ(2),
+    JZ(2),
+    LT(3),
+    EQ(3),
     DUMMY(1)
 }
 
-class Intcode(memoryIn: List<Int>) {
+open class Intcode(memoryIn: List<Int>) {
 
     val log = LogFactory.getLog(this.javaClass)
 
@@ -30,9 +34,9 @@ class Intcode(memoryIn: List<Int>) {
     // }
 
     open fun getInput(): Int {
-	val v = inputs.first()
-	inputs = inputs.drop(1)
-	return v
+    val v = inputs.first()
+    inputs = inputs.drop(1)
+    return v
     }
 
     open fun output(i: Int) = outputs.add(i)
@@ -61,36 +65,50 @@ class Intcode(memoryIn: List<Int>) {
 
         if(log.isDebugEnabled()) {
             modes = memory[ip] / 100
-            val param = Array<String>(4) {""}
+            var param = "%05d: %3.3s".format(memory[ip], opcode.toString())
             for(i in 1.rangeTo(opcode.params)) {
                 if(modes % 10 == 1) {
-                    param[i] = "%d".format(reg[i])
+                    param += " %d".format(reg[i])
                 } else {
-                    param[i] = "[%d]%d".format(memory[ip+i], reg[i])
+                    param += " [%d]%d".format(memory[ip+i], reg[i])
                 }
                 modes = modes/10
             }
-            log.debug("%3.3s %s %s %s".format(opcode.toString(), param[1], param[2], param[3]))
+            log.debug(param)
         }
 
+    var newip = -1
         when(opcode) {
             OpCode.ADD -> { setMem(3, reg[1]+reg[2]) }
             OpCode.MUL -> { setMem(3, reg[1]*reg[2]) }
             OpCode.IN  -> { setMem(1, getInput())    }
             OpCode.OUT -> { output(reg[1])           }
+            OpCode.JNZ -> { if(reg[1] != 0) { newip = reg[2] } }
+            OpCode.JZ  -> { if(reg[1] == 0) { newip = reg[2] } }
+            OpCode.LT  -> { setMem(3, if(reg[1]  < reg[2]) { 1 } else { 0 })}
+            OpCode.EQ  -> { setMem(3, if(reg[1] == reg[2]) { 1 } else { 0 })}
             else-> {
                 throw RuntimeException("invalid opcode: ${memory[ip]}, ip=${ip}, cnt=${cnt}")
             }
         }
-        ip += 1+opcode.params
+    if(newip >= 0) {
+        ip = newip
+    } else {
+            ip += 1+opcode.params
+    }
         cnt++
     }
 
     fun run(): Int {
+    try {
+        log.info("Starting run")
         while(memory[ip] != 99) {
             tick()
         }
-	return memory[0]
+        return memory[0]
+    } catch(e: Exception) {
+      throw RuntimeException("error ${e.message} at ip=${ip}, cnt=${cnt}", e)
+    }
     }
 
     fun run(in1: Int, in2: Int): Int {
