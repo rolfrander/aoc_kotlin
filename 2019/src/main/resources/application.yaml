@@ -1,3 +1,14 @@
 spring:
   application:
     name: aoc2019
+  config:
+    import: optional:file:.env[.properties]
+
+aoc:
+  session-cookie: ${AOC_SESSION}
+
+logging:
+#  level:
+#    rolfrander.aoc2019.Intcode: DEBUG
+  pattern:
+    console: "%-5level [%logger{20}] %msg%n"
