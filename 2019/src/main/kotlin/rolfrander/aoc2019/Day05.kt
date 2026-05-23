@@ -17,9 +17,9 @@ class Day05 @Autowired constructor(config: AocData): AocBase(config, 5, "1002,5,
 
     fun run(data: String, input: Int): Any {
         val vm = Intcode(data.parseInts().toList())
-    vm.inputs = sequenceOf(input)
+        vm.inputs = sequenceOf(input)
         vm.run()
-    return vm.outputs
+        return vm.outputs
     }
 
     /*
