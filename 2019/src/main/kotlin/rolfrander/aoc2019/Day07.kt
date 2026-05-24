@@ -101,4 +101,8 @@ class Day07 @Autowired constructor(config: AocData): AocBase(config, 7, """3,15,
                .map { run(program, it) }
                .max()
     }
+
+    override fun part2(data: String): Any {
+        return -1
+    }
 }

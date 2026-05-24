@@ -34,9 +34,9 @@ open class Intcode(memoryIn: List<Int>) {
     // }
 
     open fun getInput(): Int {
-    val v = inputs.first()
-    inputs = inputs.drop(1)
-    return v
+        val v = inputs.first()
+        inputs = inputs.drop(1)
+        return v
     }
 
     open fun output(i: Int) = outputs.add(i)
@@ -77,7 +77,7 @@ open class Intcode(memoryIn: List<Int>) {
             log.debug(param)
         }
 
-    var newip = -1
+        var newip = -1
         when(opcode) {
             OpCode.ADD -> { setMem(3, reg[1]+reg[2]) }
             OpCode.MUL -> { setMem(3, reg[1]*reg[2]) }
@@ -91,31 +91,29 @@ open class Intcode(memoryIn: List<Int>) {
                 throw RuntimeException("invalid opcode: ${memory[ip]}, ip=${ip}, cnt=${cnt}")
             }
         }
-    if(newip >= 0) {
-        ip = newip
-    } else {
+        if(newip >= 0) {
+            ip = newip
+        } else {
             ip += 1+opcode.params
-    }
+        }
         cnt++
     }
 
-    fun run(): Int {
-    try {
-        log.info("Starting run")
-        while(memory[ip] != 99) {
-            tick()
+    fun run() {
+        try {
+            while(memory[ip] != 99) {
+                tick()
+            }
+        } catch(e: Exception) {
+          throw RuntimeException("error ${e.message} at ip=${ip}, cnt=${cnt}", e)
         }
+    }
+
+    fun runFromMemory(vararg input: Int): Int {
+        for(i in 0.rangeUntil(input.size)) {
+            memory[i+1] = input[i]
+        }
+        run()
         return memory[0]
-    } catch(e: Exception) {
-      throw RuntimeException("error ${e.message} at ip=${ip}, cnt=${cnt}", e)
     }
-    }
-
-    fun run(in1: Int, in2: Int): Int {
-        memory[1] = in1
-        memory[2] = in2
-        return run()
-    }
-
-    fun getMem(position: Int) = memory[position]
 }
