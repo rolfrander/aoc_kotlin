@@ -82,9 +82,8 @@ class Day07 @Autowired constructor(config: AocData): AocBase(config, 7, """3,15,
    
 
     fun runWithInput(vm: Intcode, phaseSetting: Int, input: Int): Int {
-        vm.inputs = sequenceOf(phaseSetting, input)
-        vm.run()
-        return vm.outputs.first()
+        val i: Sequence<Int> = sequenceOf(phaseSetting, input)
+        return vm.runIo(i).first()
     }
 
     fun run(program: List<Int>, input: Array<Int>): Int {

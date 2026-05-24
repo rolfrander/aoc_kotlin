@@ -25,7 +25,6 @@ open class Intcode(memoryIn: List<Int>) {
     var ip: Int    = 0
     var cnt: Int   = 0
     var inpos: Int = 0
-    val outputs: ArrayList<Int> = ArrayList<Int>()
     var inputs: Sequence<Int> = emptySequence()
     val memory: IntArray = memoryIn.toIntArray()
 
@@ -39,13 +38,12 @@ open class Intcode(memoryIn: List<Int>) {
         return v
     }
 
-    open fun output(i: Int) = outputs.add(i)
-
     fun setMem(relpos: Int, v: Int) {
         memory[memory[ip+relpos]] = v
     }
 
-    fun tick() {
+    fun tick(): Int? {
+        var output: Int? = null
         if(ip >= memory.size) {
             throw RuntimeException("segfault ip, cnt=${cnt}, ip=${ip}")
         }
@@ -82,7 +80,7 @@ open class Intcode(memoryIn: List<Int>) {
             OpCode.ADD -> { setMem(3, reg[1]+reg[2]) }
             OpCode.MUL -> { setMem(3, reg[1]*reg[2]) }
             OpCode.IN  -> { setMem(1, getInput())    }
-            OpCode.OUT -> { output(reg[1])           }
+            OpCode.OUT -> { output = reg[1]          }
             OpCode.JNZ -> { if(reg[1] != 0) { newip = reg[2] } }
             OpCode.JZ  -> { if(reg[1] == 0) { newip = reg[2] } }
             OpCode.LT  -> { setMem(3, if(reg[1]  < reg[2]) { 1 } else { 0 })}
@@ -97,6 +95,20 @@ open class Intcode(memoryIn: List<Int>) {
             ip += 1+opcode.params
         }
         cnt++
+        return output
+    }
+
+    fun runIo(input: Sequence<Int>): Sequence<Int> {
+        return sequence {
+            inputs = input
+            try {
+                while(memory[ip] != 99) {
+                    tick()?.let { yield(it) }
+                }
+            } catch(e: Exception) {
+              throw RuntimeException("error ${e.message} at ip=${ip}, cnt=${cnt}", e)
+            }
+        }
     }
 
     fun run() {

@@ -15,11 +15,9 @@ import rolfrander.aoc.*
 @RequestMapping("/day05/")
 class Day05 @Autowired constructor(config: AocData): AocBase(config, 5, "1002,5,3,0,99,33") {
 
-    fun run(data: String, input: Int): Any {
+    fun run(data: String, input: Int): List<Int> {
         val vm = Intcode(data.parseInts().toList())
-        vm.inputs = sequenceOf(input)
-        vm.run()
-        return vm.outputs
+        return vm.runIo(sequenceOf(input)).toList()
     }
 
     /*
@@ -59,13 +57,15 @@ class Day05 @Autowired constructor(config: AocData): AocBase(config, 5, "1002,5,
 
     override fun part2(data: String): Any {
         if(isTesting) {
-            log.info("test1(7): "+run(test1, 7))
-            log.info("test1(8): "+run(test1, 8))
-            log.info("test7(7): "+run(test7, 7))
-            log.info("test7(8): "+run(test7, 8))
-            log.info("test7(9): "+run(test7, 9))
+            log.info("test1(7): "+run(test1, 7).first())
+            log.info("test1(8): "+run(test1, 8).first())
+            log.info("test7(7): "+run(test7, 7).first())
+            log.info("test7(8): "+run(test7, 8).first())
+            log.info("test7(9): "+run(test7, 9).first())
+            return -1
+        } else {
+            return run(data, 5)
         }
-        return run(data, 5)
     }
 
 }
