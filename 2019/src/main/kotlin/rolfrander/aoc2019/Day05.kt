@@ -57,12 +57,11 @@ class Day05 @Autowired constructor(config: AocData): AocBase(config, 5, "1002,5,
 
     override fun part2(data: String): Any {
         if(isTesting) {
-            log.info("test1(7): "+run(test1, 7).first())
-            log.info("test1(8): "+run(test1, 8).first())
-            log.info("test7(7): "+run(test7, 7).first())
-            log.info("test7(8): "+run(test7, 8).first())
-            log.info("test7(9): "+run(test7, 9).first())
-            return -1
+            return listOf("test1(7): "+run(test1, 7).first(),
+                          "test1(8): "+run(test1, 8).first(),
+                          "test7(7): "+run(test7, 7).first(),
+                          "test7(8): "+run(test7, 8).first(),
+                          "test7(9): "+run(test7, 9).first())
         } else {
             return run(data, 5)
         }
