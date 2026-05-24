@@ -22,5 +22,13 @@ class Aoc2019Application {
 
 
 fun main(args: Array<String>) {
-	runApplication<Aoc2019Application>(*args)
+    if(args.size > 0 && args[0] == "-test07") {
+        if(args.size > 2) {
+            rolfrander.aoc2019.testDay07(args.copyOfRange(1, args.size))
+        } else {
+            println("-test07 requires atleast two more arguments")
+        }
+    } else {
+    	runApplication<Aoc2019Application>(*args)
+    }
 }
