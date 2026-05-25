@@ -72,13 +72,14 @@ I)SAN""") {
     }
 
     override fun part2(data: String): Any {
+        val maximumDist = 295834 // the result from part1, the computed distance will never be larger than this
         val orbitmap = parse(data)
         val youdist = countOrbitsToMap(orbitmap, "YOU")
         var san = orbitmap.get("SAN")
         var dist = 0
         while(!youdist.contains(san)) {
             dist++
-            if(dist > 295834) {
+            if(dist > maximumDist) {
                 throw RuntimeException("we got lost!")
             }
             san = orbitmap.get(san)
