@@ -1,8 +1,10 @@
 package rolfrander.aoc2019
 
-import kotlin.enums.enumEntries
+
 import kotlin.collections.List
 import kotlin.collections.ArrayList
+import kotlinx.coroutines.*
+
 import org.apache.commons.logging.LogFactory
 
 import rolfrander.aoc.*
@@ -62,9 +64,10 @@ class Memory(memoryIn: List<Long>) {
 
 }
 
-open class Intcode(val memory: Memory) {
+open class Intcode(val memory: Memory, val id: Int = -1) {
 
     val log = LogFactory.getLog(this.javaClass)
+    val logInstr = LogFactory.getLog("rolfrander.aoc2019.Intcode.INSTR")
 
     var ip: Long    = 0
     var base: Long  = 0
@@ -73,22 +76,20 @@ open class Intcode(val memory: Memory) {
     val outputs: ArrayList<Long> = ArrayList<Long>()
     var inputs: Sequence<Long> = emptySequence()
 
-    // fun setInputs(i: Sequence<Int>) {
-    //     inputs = i
-    // }
 
-    open fun getInput(): Long {
+    suspend fun input(): Long {
         val v = inputs.first()
         inputs = inputs.drop(1)
         return v
     }
 
-    open fun output(i: Long) = outputs.add(i)
+    suspend fun output(i: Long): Unit { outputs.add(i) }
 
-    fun tick() {
+    suspend fun tick(inputFn : suspend ()     -> Long = { input() } , 
+                     outputFn: suspend (Long) -> Unit = { output(it) }) {
         val opcode = OpCode.entries[(memory[ip] % 100).toInt()]
-        val paramref = LongArray(4)
         var modes = (memory[ip] / 100).toInt()
+        val paramref = LongArray(4)
         // reg0 is the opcode, ignored
         // we also read the destination address in to a register, which 
         // isn't really needed when using setMem().
@@ -109,7 +110,11 @@ open class Intcode(val memory: Memory) {
 
         if(log.isDebugEnabled()) {
             modes = (memory[ip] / 100).toInt()
-            var param = "%05d: %3.3s".format(memory[ip], opcode.toString())
+            var param = ""
+            if(id >= 0) {
+                param += "(%02d) ".format(id)
+            }
+            param = "%05d: %3.3s".format(memory[ip], opcode.toString())
             for(i in 1.rangeTo(opcode.params)) {
                 val r = memory[ip+i]
                 when(modes % 10) {
@@ -120,14 +125,14 @@ open class Intcode(val memory: Memory) {
                 }
                 modes = modes/10
             }
-            log.debug(param)
+            logInstr.debug(param)
         }
 
         var newip = -1L
         when(opcode) {
             OpCode.ADD -> { setmem(3, reg(1)+reg(2) )                        }
             OpCode.MUL -> { setmem(3, reg(1)*reg(2) )                        }
-            OpCode.IN  -> { setmem(1, getInput())                            }
+            OpCode.IN  -> { setmem(1, input())                            }
             OpCode.OUT -> { output(reg(1))                                   }
             OpCode.JNZ -> { if(reg(1) != 0L) { newip = reg(2) }              }
             OpCode.JZ  -> { if(reg(1) == 0L) { newip = reg(2) }              }
@@ -146,7 +151,8 @@ open class Intcode(val memory: Memory) {
         cnt++
     }
 
-    fun run() {
+    suspend fun run(inputFn : suspend ()     -> Long = ::input , 
+                    outputFn: suspend (Long) -> Unit = ::output) {
         try {
             while(memory[ip] != 99L) {
                 tick()
@@ -157,10 +163,12 @@ open class Intcode(val memory: Memory) {
     }
 
     fun runFromMemory(vararg input: Long): Long {
-        for(i in 0.rangeUntil(input.size)) {
-            memory[i+1L] = input[i]
+        return runBlocking {
+            for(i in 0.rangeUntil(input.size)) {
+                memory[i+1L] = input[i]
+            }
+            run()
+            memory[0]
         }
-        run()
-        return memory[0]
     }
 }

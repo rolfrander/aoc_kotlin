@@ -9,7 +9,9 @@ aoc:
 
 logging:
   level:
-    #rolfrander.aoc2019.Intcode: DEBUG
-    rolfrander.aoc2019.Day08: DEBUG
+    rolfrander.aoc2019.Intcode: INFO
+    # used for logging individual instructions of the VM ASM
+    rolfrander.aoc2019.Intcode.INSTR: INFO
+    rolfrander.aoc2019.Day07: DEBUG
   pattern:
     console: "%-5level [%logger{20}] %msg%n"

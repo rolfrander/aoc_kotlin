@@ -13,12 +13,13 @@ import java.net.http.HttpResponse.BodyHandlers
 import java.net.URI
 
 class AocData(private val year: String, 
-              private val session: String) {
+              private val session: String,
+              private val cacheDir: String) {
 
     val cli = HttpClient.newBuilder().followRedirects(Redirect.NORMAL).build()
 
     fun getCachePath(): Path {
-        return Path.of(".cache").createDirectories()
+        return Path.of(cacheDir).createDirectories()
     }
 
     fun getData(day: Int): String {

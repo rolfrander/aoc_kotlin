@@ -8,6 +8,8 @@ import kotlin.text.lineSequence
 import kotlin.collections.dropLastWhile
 import kotlin.sequences.sequenceOf
 import kotlin.math.max
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.*
 
 import rolfrander.aoc.*
 
@@ -16,13 +18,15 @@ import rolfrander.aoc.*
 class Day05 @Autowired constructor(config: AocData): AocBase(config, 5, "1002,5,3,0,99,33") {
 
     fun run(data: String, input: Long): Any {
-        val vm = Intcode(Memory(data))
-        vm.inputs = sequenceOf(input)
-        vm.run()
-        return vm.outputs
+        return runBlocking {
+            val vm = Intcode(Memory(data))
+            vm.inputs = sequenceOf(input)
+            vm.run()
+            vm.outputs
+        }
     }
 
-    /*
+    /* 
      * For example, here are several programs that take one input, compare it to the value 8, and then produce one output:
      * 
      *     3,9,8,9,10,9,4,9,99,-1,8 - Using position mode, consider whether the input is equal to 8; output 1 (if it is) or 0 (if it is not).

@@ -22,10 +22,12 @@ import rolfrander.aoc.*
 class Day09 @Autowired constructor(config: AocData): AocBase(config, 9, """109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99""") {
 
     fun run(data: String, input: Long): Any {
-        val vm = Intcode(Memory(data))
-        vm.inputs = sequenceOf(input)
-        vm.run()
-        return vm.outputs
+        return runBlocking {
+            val vm = Intcode(Memory(data))
+            vm.inputs = sequenceOf(input)
+            vm.run()
+            vm.outputs
+        }
     }
 
     val test2 = "1102,34915192,34915192,7,4,7,99,0"
