@@ -169,9 +169,8 @@ class Day07 @Autowired constructor(config: AocData): AocBase(config, 7, """3,15,
                 "3,52,1001,52,-5,52,3,53,1,52,56,54,1007,54,5,55,1005,55,26,1001,54,-5,54,1105,1,12,1,53,54,53,1008,54,0,55,1001,55,1,55,2,53,55,53,4,53,1001,56,-1,56,1005,56,6,99,0,0,0,0,10")
 
     val testparams = arrayOf(arrayOf(9,8,7,6,5), arrayOf(9,7,8,5,6))
-    
-    suspend fun testRun(testcase: Int): Int = coroutineScope {
-        val program = testvector[testcase].parseInts().toList()
+
+    suspend fun configureAmps(program: List<Int>, params: Array<Int>): Int = coroutineScope {
         val channels = Array(5) { _ -> Channel<Int>() }
         log.debug("        launch each VM")
         val invocation = Array(5) {
@@ -185,7 +184,7 @@ class Day07 @Autowired constructor(config: AocData): AocBase(config, 7, """3,15,
         // we insert values in the opposite direction to make sure that
         // the last VM starts first. This avoids the race condition
         // where a VM outputs a value before we send the input parameter.
-        for((param,chan) in testparams[testcase].zip(channels).asReversed()) {
+        for((param,chan) in params.zip(channels).asReversed()) {
             log.debug("        -> send ${param}")
             chan.send(param)
             log.debug("        !  sent ${param}")
@@ -197,14 +196,29 @@ class Day07 @Autowired constructor(config: AocData): AocBase(config, 7, """3,15,
         // ... we wait for the last output from VM[4]
         channels[0].receive()
     }
+
+
+
+    suspend fun configureAmpsForTestcase(testcase: Int): Int {
+        val program = testvector[testcase].parseInts().toList()
+        val params = testparams[testcase]
+        return configureAmps(program, params)
+    }
     
     override fun part2(data: String): Any {
         return runBlocking {
             if(isTesting) {
                 log.debug("day 7 - testing")
-                "res 0: %d, res 1: %d".format(testRun(0), testRun(1))
+                "res 0: %d, res 1: %d".format(configureAmpsForTestcase(0), configureAmpsForTestcase(1))
             } else {
-                -1
+                val program = data.parseInts().toList()
+                var best = Int.MIN_VALUE
+
+                for (perm in permutations(arrayOf(5,6,7,8,9))) {
+                    log.debug("running with inputs %s".format(perm))
+                    best = maxOf(best, configureAmps(program, perm))
+                }
+                best
             }
         }
     }
