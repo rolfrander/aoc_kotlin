@@ -168,7 +168,7 @@ class Day07 @Autowired constructor(config: AocData): AocBase(config, 7, """3,15,
 
     val testparams = arrayOf(arrayOf(9L,8L,7L,6L,5L), arrayOf(9L,7L,8L,5L,6L))
     
-    suspend fun testRun(testcase: Int): Long = coroutineScope {
+    suspend fun configureAmps(program: String, params: Array<Long>): Long = coroutineScope {
         val channels = Array(5) { _ -> Channel<Long>() }
         log.debug("        launch each VM")
         val invocation = Array(5) {
@@ -182,7 +182,7 @@ class Day07 @Autowired constructor(config: AocData): AocBase(config, 7, """3,15,
         // we insert values in the opposite direction to make sure that
         // the last VM starts first. This avoids the race condition
         // where a VM outputs a value before we send the input parameter.
-        for((param,chan) in testparams[testcase].zip(channels).asReversed()) {
+        for((param,chan) in params.zip(channels).asReversed()) {
             log.debug("        -> send ${param}")
             chan.send(param)
             log.debug("        !  sent ${param}")
@@ -194,14 +194,28 @@ class Day07 @Autowired constructor(config: AocData): AocBase(config, 7, """3,15,
         // ... we wait for the last output from VM[4]
         channels[0].receive()
     }
+
+
+
+    suspend fun configureAmpsForTestcase(testcase: Int): Long {
+        val program = testvector[testcase]
+        val params = testparams[testcase]
+        return configureAmps(program, params)
+    }
     
     override fun part2(data: String): Any {
         return runBlocking {
             if(isTesting) {
                 log.debug("day 7 - testing")
-                "res 0: %d, res 1: %d".format(testRun(0), testRun(1))
+                "res 0: %d, res 1: %d".format(configureAmpsForTestcase(0), configureAmpsForTestcase(1))
             } else {
-                -1
+                var best = Long.MIN_VALUE
+
+                for (perm in permutations(arrayOf(5L,6L,7L,8L,9L))) {
+                    log.debug("running with inputs %s".format(perm))
+                    best = maxOf(best, configureAmps(data, perm))
+                }
+                best
             }
         }
     }

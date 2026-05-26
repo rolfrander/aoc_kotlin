@@ -85,8 +85,8 @@ open class Intcode(val memory: Memory, val id: Int = -1) {
 
     suspend fun output(i: Long): Unit { outputs.add(i) }
 
-    suspend fun tick(inputFn : suspend ()     -> Long = { input() } , 
-                     outputFn: suspend (Long) -> Unit = { output(it) }) {
+    suspend fun tick(inputFn : suspend ()     -> Long, 
+                     outputFn: suspend (Long) -> Unit) {
         val opcode = OpCode.entries[(memory[ip] % 100).toInt()]
         var modes = (memory[ip] / 100).toInt()
         val paramref = LongArray(4)
@@ -132,8 +132,8 @@ open class Intcode(val memory: Memory, val id: Int = -1) {
         when(opcode) {
             OpCode.ADD -> { setmem(3, reg(1)+reg(2) )                        }
             OpCode.MUL -> { setmem(3, reg(1)*reg(2) )                        }
-            OpCode.IN  -> { setmem(1, input())                            }
-            OpCode.OUT -> { output(reg(1))                                   }
+            OpCode.IN  -> { setmem(1, inputFn())                             }
+            OpCode.OUT -> { outputFn(reg(1))                                 }
             OpCode.JNZ -> { if(reg(1) != 0L) { newip = reg(2) }              }
             OpCode.JZ  -> { if(reg(1) == 0L) { newip = reg(2) }              }
             OpCode.LT  -> { setmem(3, if(reg(1)  < reg(2)) { 1 } else { 0 }) }
@@ -155,7 +155,7 @@ open class Intcode(val memory: Memory, val id: Int = -1) {
                     outputFn: suspend (Long) -> Unit = ::output) {
         try {
             while(memory[ip] != 99L) {
-                tick()
+                tick(inputFn, outputFn)
             }
         } catch(e: Exception) {
           throw RuntimeException("error ${e.message} at ip=${ip}, cnt=${cnt}", e)
