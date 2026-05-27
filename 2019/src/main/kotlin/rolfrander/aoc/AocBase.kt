@@ -17,7 +17,7 @@ import org.apache.commons.logging.LogFactory
 
 abstract class AocBase(private val config: AocData, private val day: Int, private val testdata: String) {
 
-    val data: String by lazy { config.getData(day) }
+    val data = config.getData(day)
 
     var isTesting = false;
 
