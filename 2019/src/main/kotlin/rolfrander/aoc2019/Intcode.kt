@@ -15,6 +15,7 @@ enum class OpCode(val params: Int) {
     JZ(2),
     LT(3),
     EQ(3),
+    BAS(1),
     DUMMY(1)
 }
 
@@ -23,6 +24,7 @@ open class Intcode(memoryIn: List<Int>) {
     val log = LogFactory.getLog(this.javaClass)
 
     var ip: Int    = 0
+    var base: Int  = 0
     var cnt: Int   = 0
     var inpos: Int = 0
     val outputs: ArrayList<Int> = ArrayList<Int>()
@@ -55,10 +57,12 @@ open class Intcode(memoryIn: List<Int>) {
         // reg0 is the opcode, ignored
         // we also read the destination address in to a register, which isn't really needed when using setMem()
         for(i in 1.rangeTo(opcode.params)) {
-            if(modes % 10 == 1) {
-                reg[i] = memory[ip+i]
-            } else {
-                reg[i] = memory[memory[ip+i]]
+            val r = memory[ip+i]
+            reg[i] = when(modes % 10) {
+                0 -> memory[r]
+                1 -> r
+                2 -> memory[base+r]
+                else -> throw RuntimeException("unknown addressing mode for opcode ${memory[ip]}")
             }
             modes = modes/10
         }
@@ -79,14 +83,15 @@ open class Intcode(memoryIn: List<Int>) {
 
         var newip = -1
         when(opcode) {
-            OpCode.ADD -> { setMem(3, reg[1]+reg[2]) }
-            OpCode.MUL -> { setMem(3, reg[1]*reg[2]) }
-            OpCode.IN  -> { setMem(1, getInput())    }
-            OpCode.OUT -> { output(reg[1])           }
-            OpCode.JNZ -> { if(reg[1] != 0) { newip = reg[2] } }
-            OpCode.JZ  -> { if(reg[1] == 0) { newip = reg[2] } }
-            OpCode.LT  -> { setMem(3, if(reg[1]  < reg[2]) { 1 } else { 0 })}
-            OpCode.EQ  -> { setMem(3, if(reg[1] == reg[2]) { 1 } else { 0 })}
+            OpCode.ADD -> { setMem(3, reg[1]+reg[2])                         }
+            OpCode.MUL -> { setMem(3, reg[1]*reg[2])                         }
+            OpCode.IN  -> { setMem(1, getInput())                            }
+            OpCode.OUT -> { output(reg[1])                                   }
+            OpCode.JNZ -> { if(reg[1] != 0) { newip = reg[2] }               }
+            OpCode.JZ  -> { if(reg[1] == 0) { newip = reg[2] }               }
+            OpCode.LT  -> { setMem(3, if(reg[1]  < reg[2]) { 1 } else { 0 }) }
+            OpCode.EQ  -> { setMem(3, if(reg[1] == reg[2]) { 1 } else { 0 }) }
+            OpCode.BAS -> { base = reg[1]                                    }
             else-> {
                 throw RuntimeException("invalid opcode: ${memory[ip]}, ip=${ip}, cnt=${cnt}")
             }
