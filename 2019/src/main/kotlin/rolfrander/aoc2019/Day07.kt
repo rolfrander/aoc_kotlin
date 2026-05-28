@@ -81,24 +81,23 @@ fun testDay07(arg: Array<String>) {
 class Day07 @Autowired constructor(config: AocData): AocBase(config, 7, """3,15,3,16,1002,16,10,16,1,16,15,15,4,15,99,0,0""") {
    
 
-    fun runWithInput(vm: Intcode, phaseSetting: Int, input: Int): Int {
+    fun runWithInput(vm: Intcode, phaseSetting: Long, input: Long): Long {
         vm.inputs = sequenceOf(phaseSetting, input)
         vm.run()
         return vm.outputs.first()
     }
 
-    fun run(program: List<Int>, input: Array<Int>): Int {
-        var out = 0
+    fun run(program: String, input: Array<Long>): Long {
+        var out = 0L
         for(i in 0..4) {
-            out = runWithInput(Intcode(program), input[i], out) 
+            out = runWithInput(Intcode(Memory(program)), input[i], out) 
         }
         return out
     }
 
     override fun part1(data: String): Any {
-        val program = data.parseInts().toList()
-        return permutations(arrayOf(0,1,2,3,4))
-               .map { run(program, it) }
+        return permutations(arrayOf(0L,1L,2L,3L,4L))
+               .map { run(data, it) }
                .max()
     }
 

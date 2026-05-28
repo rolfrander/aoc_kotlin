@@ -17,8 +17,8 @@ class Day02 @Autowired constructor(config: AocData): AocBase(config, 2, "1,1,1,4
 
     fun fuel(weight: Int) = max(weight / 3 - 2, 0)
 
-    override fun part1(data: String): Int {
-        val mem = data.parseInts().toList()
+    override fun part1(data: String): Long {
+        val mem = Memory(data)
         if(isTesting) {
             return Intcode(mem).runFromMemory()
         } else {
@@ -26,14 +26,14 @@ class Day02 @Autowired constructor(config: AocData): AocBase(config, 2, "1,1,1,4
         }
     }
 
-    override fun part2(data: String): Int {
-        val mem = data.parseInts().toList()
-        val expectedResult = 19690720
+    override fun part2(data: String): Long {
+        val mem = Memory(data)
+        val expectedResult = 19690720L
         if(isTesting) {
             return -1
         } else {
-            for(noun in 0..<100) {
-                for(verb in 0..<100) {
+            for(noun in 0L..<100L) {
+                for(verb in 0L..<100L) {
                     try {
                         if(Intcode(mem).runFromMemory(noun, verb) == expectedResult) {
                             return noun*100+verb

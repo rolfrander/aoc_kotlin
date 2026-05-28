@@ -9,7 +9,7 @@ aoc:
 
 logging:
   level:
-#    rolfrander.aoc2019.Intcode: DEBUG
+    #rolfrander.aoc2019.Intcode: DEBUG
     rolfrander.aoc2019.Day08: DEBUG
   pattern:
     console: "%-5level [%logger{20}] %msg%n"

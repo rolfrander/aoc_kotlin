@@ -29,7 +29,9 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
 
     testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
+	testImplementation(platform("org.junit:junit-bom:6.1.0"))
+	testImplementation("org.junit.jupiter:junit-jupiter")
+    //testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     
     developmentOnly("org.springframework.boot:spring-boot-devtools")
@@ -42,9 +44,16 @@ kotlin {
     }
 }
 
+tasks.withType<Test> {
+    useJUnitPlatform()
+	testLogging {
+		events("passed", "skipped", "failed")
+	}
+}
+
 /**
- * This will redirect compilation-errors to a separate file which can be read by vim for quickfix.
- * The file is truncated on each build.
+ * This will redirect compilation-errors to a separate file which can be 
+ * read by vim for quickfix.  The file is truncated on each build.
  */
 abstract class KotlinErrorLogger : BuildService<BuildServiceParameters.None>, AutoCloseable {
 
@@ -76,8 +85,4 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach 
         service.log(message?.toString() ?: "(nomessage)")
     }
 }
-/****************************** End of logging customization ******************************/
-
-tasks.withType<Test> {
-    useJUnitPlatform()
-}
+/******************** End of logging customization ********************/
