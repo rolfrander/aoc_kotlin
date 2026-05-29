@@ -174,7 +174,7 @@ class Day07 @Autowired constructor(config: AocData): AocBase(config, 7, """3,15,
         val invocation = Array(5) {
             i -> async {
                     log.debug("        - launch ${i}")
-                    runWithChannels(data, i, channels[i], channels[(i+1) % 5])
+                    runWithChannels(program, i, channels[i], channels[(i+1) % 5])
                     log.debug("        v done ${i}")
             }
         }
