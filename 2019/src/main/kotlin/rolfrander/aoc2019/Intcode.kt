@@ -87,21 +87,25 @@ open class Intcode(val memory: Memory) {
 
     fun tick() {
         val opcode = OpCode.entries[(memory[ip] % 100).toInt()]
-        val reg = LongArray(4)
+        val paramref = LongArray(4)
         var modes = (memory[ip] / 100).toInt()
         // reg0 is the opcode, ignored
         // we also read the destination address in to a register, which 
         // isn't really needed when using setMem().
         for(i in 1.rangeTo(opcode.params)) {
-            val r = memory[ip+i]
-            reg[i] = when(modes % 10) {
+            val r = ip+i
+            paramref[i] = when(modes % 10) {
                 0 -> memory[r]
                 1 -> r
-                2 -> memory[base+r]
+                2 -> memory[r]+base
                 else -> throw RuntimeException("unknown addressing mode for opcode ${memory[ip]}")
             }
+
             modes = modes/10
         }
+
+        val setmem:(Int,Long) -> Unit = { regno,v -> memory[paramref[regno]] = v }
+        val reg:(Int) -> Long = { regno -> memory[paramref[regno]] }
 
         if(log.isDebugEnabled()) {
             modes = (memory[ip] / 100).toInt()
@@ -109,9 +113,9 @@ open class Intcode(val memory: Memory) {
             for(i in 1.rangeTo(opcode.params)) {
                 val r = memory[ip+i]
                 when(modes % 10) {
-                    0 -> param += " [%d]%d".format(memory[ip+i], reg[i])
-                    1 -> param += " %d".format(reg[i])
-                    2 -> param += " [%d+%d]%d".format(base, memory[ip+i], reg[i])
+                    0 -> param += " [%d]%d".format(memory[ip+i], reg(i))
+                    1 -> param += " %d".format(reg(i))
+                    2 -> param += " [%d+%d]%d".format(base, memory[ip+i], reg(i))
                     else -> throw RuntimeException("unknown addressing mode for opcode ${memory[ip]}")
                 }
                 modes = modes/10
@@ -119,18 +123,17 @@ open class Intcode(val memory: Memory) {
             log.debug(param)
         }
 
-        val setmem:(Long,Long) -> Unit = { pos,v -> memory[memory[ip+pos]] = v }
         var newip = -1L
         when(opcode) {
-            OpCode.ADD -> { setmem(3, reg[1]+reg[2] )                        }
-            OpCode.MUL -> { setmem(3, reg[1]*reg[2] )                        }
+            OpCode.ADD -> { setmem(3, reg(1)+reg(2) )                        }
+            OpCode.MUL -> { setmem(3, reg(1)*reg(2) )                        }
             OpCode.IN  -> { setmem(1, getInput())                            }
-            OpCode.OUT -> { output(reg[1])                                   }
-            OpCode.JNZ -> { if(reg[1] != 0L) { newip = reg[2] }              }
-            OpCode.JZ  -> { if(reg[1] == 0L) { newip = reg[2] }              }
-            OpCode.LT  -> { setmem(3, if(reg[1]  < reg[2]) { 1 } else { 0 }) }
-            OpCode.EQ  -> { setmem(3, if(reg[1] == reg[2]) { 1 } else { 0 }) }
-            OpCode.BAS -> { base += reg[1]                                   }
+            OpCode.OUT -> { output(reg(1))                                   }
+            OpCode.JNZ -> { if(reg(1) != 0L) { newip = reg(2) }              }
+            OpCode.JZ  -> { if(reg(1) == 0L) { newip = reg(2) }              }
+            OpCode.LT  -> { setmem(3, if(reg(1)  < reg(2)) { 1 } else { 0 }) }
+            OpCode.EQ  -> { setmem(3, if(reg(1) == reg(2)) { 1 } else { 0 }) }
+            OpCode.BAS -> { base += reg(1)                                   }
             else-> {
                 throw RuntimeException("invalid opcode: ${memory[ip]}, ip=${ip}, cnt=${cnt}")
             }

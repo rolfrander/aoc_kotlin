@@ -21,8 +21,9 @@ import rolfrander.aoc.*
 @RequestMapping("/day09/")
 class Day09 @Autowired constructor(config: AocData): AocBase(config, 9, """109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99""") {
 
-    fun run(data: String): Any {
+    fun run(data: String, input: Long): Any {
         val vm = Intcode(Memory(data))
+        vm.inputs = sequenceOf(input)
         vm.run()
         return vm.outputs
     }
@@ -32,10 +33,10 @@ class Day09 @Autowired constructor(config: AocData): AocBase(config, 9, """109,1
 
     override fun part1(data: String): Any {
         if(isTesting) {
-            log.info("test2: "+run(test2))
-            log.info("test3: "+run(test3))
+            log.info("test2: "+run(test2,0L))
+            log.info("test3: "+run(test3,0L))
         }
-        return run(data)
+        return run(data,1L)
     }
 
     override fun part2(data: String): Any {
