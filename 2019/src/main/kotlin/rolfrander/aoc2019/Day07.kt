@@ -80,27 +80,25 @@ fun testDay07(arg: Array<String>) {
 @RequestMapping("/day07/")
 class Day07 @Autowired constructor(config: AocData): AocBase(config, 7, """3,15,3,16,1002,16,10,16,1,16,15,15,4,15,99,0,0""") {
    
-    fun run(program: List<Int>, input: Array<Int>): Int {
-        val vm = { Intcode(program) }
-        return sequenceOf(0).let { vm().runIo(sequenceOf(input[0])+it) }
-                            .let { vm().runIo(sequenceOf(input[1])+it) }
-                            .let { vm().runIo(sequenceOf(input[2])+it) }
-                            .let { vm().runIo(sequenceOf(input[3])+it) }
-                            .let { vm().runIo(sequenceOf(input[4])+it) }
-                            .first()
+    fun run(program: String, input: Array<Long>): Long {
+        val vm = { Intcode(Memory(program)) }
+        return sequenceOf(0L).let { vm().runIo(sequenceOf(input[0])+it) }
+                             .let { vm().runIo(sequenceOf(input[1])+it) }
+                             .let { vm().runIo(sequenceOf(input[2])+it) }
+                             .let { vm().runIo(sequenceOf(input[3])+it) }
+                             .let { vm().runIo(sequenceOf(input[4])+it) }
+                             .first()
     }
 
     override fun part1(data: String): Any {
-        val program = data.parseInts().toList()
-        return permutations(arrayOf(0,1,2,3,4))
-               .map { run(program, it) }
+        return permutations(arrayOf(0L,1L,2L,3L,4L))
+               .map { run(data, it) }
                .max()
     }
 
     override fun part2(data: String): Any {
         if(isTesting) {
             val program = "3,26,1001,26,-4,26,3,27,1002,27,2,27,1,27,26,27,4,27,1001,28,-1,28,1005,28,6,99,0,0,5"
-                          .parseInts().toList()
             return run(program, arrayOf(9,8,7,6,5))
         } else {
             return -1

@@ -18,3 +18,19 @@ I am going to need to implement a full frontend to play the game. I have done th
 
 ## Details of concurrency design
 
+Experiments in different branches:
+
+* Branch: `intcode-sequece`
+  * implement input and output as sequences which are filled lazily.
+    This effectively converts the series of vm-invocations to a
+    recursive call. This is elegant code, but for day 7 part 2 this
+    didn't work, because the output of the last VM in the chain must be
+    input to the first and we can't go back and change the input.
+  * It might be possible to add a loop around this, manually moving
+    output from the last VM to input of the first, but we still need
+    some sort of signalling that the VM have stopped. I have a feeling
+    this won't be that elegant...
+* Branch: `intcode-coroutines`
+  * Implementing input and output as channels between different VM-s
+    running as separate coroutines.
+
