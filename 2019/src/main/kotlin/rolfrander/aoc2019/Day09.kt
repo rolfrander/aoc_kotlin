@@ -40,7 +40,7 @@ class Day09 @Autowired constructor(config: AocData): AocBase(config, 9, """109,1
     }
 
     override fun part2(data: String): Any {
-        return -1
+        return run(data,2L)
     }
 
 }
