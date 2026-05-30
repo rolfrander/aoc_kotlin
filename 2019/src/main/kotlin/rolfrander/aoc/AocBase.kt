@@ -52,9 +52,11 @@ abstract class AocBase(private val config: AocData, private val day: Int, privat
     fun compute(data: String, link: String, linkText: String): String {
         var res1: Any = ""
         var res2: Any = ""
+        log.info("part 1")
         val time1 = measureTimeMillis {
             res1 = part1(data)
         }
+        log.info("part 2")
         var time2 = measureTimeMillis { 
             res2 = part2(data)
         }
